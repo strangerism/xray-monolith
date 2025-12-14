@@ -90,10 +90,11 @@ void CInventoryOwner::reload(LPCSTR section)
 	inventory().Clear();
 	inventory().m_pOwner = this;
 	inventory().SetSlotsUseful(true);
-
+	
 	m_money = 0;
 	m_bTrading = false;
 	m_bTalking = false;
+	m_bCalling = false;
 	m_pTalkPartner = NULL;
 
 	CAttachmentOwner::reload(section);
@@ -271,8 +272,33 @@ bool CInventoryOwner::OfferTalk(CInventoryOwner* talk_partner)
 	//	if(relation == ALife::eRelationTypeEnemy) return false;
 
 	if (!is_alive() || !pPartnerEntityAlive->g_Alive()) return false;
+	
+	StartTalk(talk_partner);
+
+	return true;
+}
+
+// Call is a specialt type of talk, which uses a different ui and xml doc (call.xml)
+// the only difference with OfferTalk is the setting of flag m_bCalling so that it can be queried from
+// lua with is_calling script object call. 
+// This way lua scripts can establish talk with distant npcs (radio call) while generic script have a way to check
+// is_calling to make sure not to break such distant conversations
+bool CInventoryOwner::OfferCall(CInventoryOwner* talk_partner)
+{
+	if (!IsTalkEnabled()) return false;
+
+	//проверить отношение к собеседнику
+	CEntityAlive* pPartnerEntityAlive = smart_cast<CEntityAlive*>(talk_partner);
+	R_ASSERT(pPartnerEntityAlive);
+
+	//	ALife::ERelationType relation = RELATION_REGISTRY().GetRelationType(this, talk_partner);
+	//	if(relation == ALife::eRelationTypeEnemy) return false;
+
+	if (!is_alive() || !pPartnerEntityAlive->g_Alive()) return false;
 
 	StartTalk(talk_partner);
+
+	m_bCalling = true;
 
 	return true;
 }
@@ -290,6 +316,7 @@ void CInventoryOwner::StopTalk()
 {
 	m_pTalkPartner = NULL;
 	m_bTalking = false;
+	m_bCalling = false;
 
 	CUIGameSP* ui_sp = smart_cast<CUIGameSP*>(CurrentGameUI());
 	if (ui_sp && ui_sp->TalkMenu->IsShown())
@@ -299,6 +326,11 @@ void CInventoryOwner::StopTalk()
 bool CInventoryOwner::IsTalking()
 {
 	return m_bTalking;
+}
+
+bool CInventoryOwner::IsCalling()
+{
+	return m_bCalling;
 }
 
 void CInventoryOwner::StartTrading()

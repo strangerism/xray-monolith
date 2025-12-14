@@ -16,12 +16,14 @@
 #include "dinput.h"
 
 #define				TALK_XML				"talk.xml"
+#define				CALL_XML				"call.xml"
 
 CUITalkDialogWnd::CUITalkDialogWnd()
 	: m_pNameTextFont(NULL)
 {
 	m_ClickedQuestionID = "";
 	mechanic_mode = false;
+	call_mode = false;
 }
 
 CUITalkDialogWnd::~CUITalkDialogWnd()
@@ -32,7 +34,14 @@ CUITalkDialogWnd::~CUITalkDialogWnd()
 void CUITalkDialogWnd::InitTalkDialogWnd()
 {
 	m_uiXml = xr_new<CUIXml>();
-	m_uiXml->Load(CONFIG_PATH, UI_PATH, TALK_XML);
+
+	// switch the xml based on the call_mode when instantiating this class
+	if (call_mode){
+		m_uiXml->Load(CONFIG_PATH, UI_PATH, CALL_XML);
+	}
+	else{
+		m_uiXml->Load(CONFIG_PATH, UI_PATH, TALK_XML);
+	}
 	CUIXmlInit ml_init;
 
 	CUIXmlInit::InitWindow(*m_uiXml, "main", 0, this);
@@ -80,8 +89,12 @@ void CUITalkDialogWnd::InitTalkDialogWnd()
 	AttachChild(&UIToTradeButton);
 	CUIXmlInit::Init3tButton(*m_uiXml, "button", 0, &UIToTradeButton);
 
-	//AttachChild					(&UIToExitButton);
-	//CUIXmlInit::Init3tButton	(*m_uiXml, "button_exit", 0, &UIToExitButton);
+	if (call_mode)
+	{
+		AttachChild(&UIToExitButton);
+		CUIXmlInit::Init3tButton(*m_uiXml, "button_exit", 0, &UIToExitButton);
+		AddCallback	(&UIToExitButton,BUTTON_CLICKED,CUIWndCallback::void_function(this, &CUITalkDialogWnd::OnExitClicked));
+	}
 
 	//m_btn_pos[0]				= UIToTradeButton.GetWndPos();
 	//m_btn_pos[1]				= UIToExitButton.GetWndPos();
@@ -101,7 +114,6 @@ void CUITalkDialogWnd::InitTalkDialogWnd()
 	               CUIWndCallback::void_function(this, &CUITalkDialogWnd::OnQuestionClicked));
 	AddCallback(&UIToTradeButton, BUTTON_CLICKED,
 	            CUIWndCallback::void_function(this, &CUITalkDialogWnd::OnTradeClicked));
-	//	AddCallback					(&UIToExitButton,BUTTON_CLICKED,CUIWndCallback::void_function(this, &CUITalkDialogWnd::OnExitClicked));
 }
 
 

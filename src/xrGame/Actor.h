@@ -160,7 +160,9 @@ protected:
 	CActorStatisticMgr* m_statistic_manager;
 public:
 	virtual void StartTalk(CInventoryOwner* talk_partner);
+	virtual void StartCall(CInventoryOwner* talk_partner);
 	void RunTalkDialog(CInventoryOwner* talk_partner, bool disable_break);
+	void RunCallDialog(CInventoryOwner* talk_partner, bool disable_break);
 	CActorStatisticMgr& StatisticMgr() { return *m_statistic_manager; }
 	CGameNewsRegistryWrapper* game_news_registry;
 	CCharacterPhysicsSupport* m_pPhysics_support;

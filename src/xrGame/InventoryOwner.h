@@ -86,9 +86,11 @@ public:
 
 	//для включения разговора
 	virtual bool OfferTalk(CInventoryOwner* talk_partner);
+	virtual bool OfferCall(CInventoryOwner* talk_partner);	
 	virtual void StartTalk(CInventoryOwner* talk_partner, bool start_trade = true);
 	virtual void StopTalk();
 	virtual bool IsTalking();
+	virtual bool IsCalling();
 
 	void StartTrading();
 	void StopTrading();
@@ -125,6 +127,7 @@ protected:
 	CTrade* m_pTrade;
 	bool m_bTrading;
 	bool m_bTalking;
+	bool m_bCalling;
 	CInventoryOwner* m_pTalkPartner;
 
 	bool m_bAllowTalk;

@@ -227,6 +227,7 @@ class_<CScriptGameObject> script_register_game_object2(class_<CScriptGameObject>
 		.def("get_task", &CScriptGameObject::GetTask)
 
 		.def("is_talking", &CScriptGameObject::IsTalking)
+		.def("is_calling", &CScriptGameObject::IsCalling)
 		.def("stop_talk", &CScriptGameObject::StopTalk)
 		.def("enable_talk", &CScriptGameObject::EnableTalk)
 		.def("disable_talk", &CScriptGameObject::DisableTalk)
@@ -269,6 +270,7 @@ class_<CScriptGameObject> script_register_game_object2(class_<CScriptGameObject>
 		.def("switch_to_upgrade", &CScriptGameObject::SwitchToUpgrade)
 		.def("switch_to_talk", &CScriptGameObject::SwitchToTalk)
 		.def("run_talk_dialog", &CScriptGameObject::RunTalkDialog)
+		.def("run_call_dialog", &CScriptGameObject::RunCallDialog)
 		.def("allow_break_talk_dialog", &CScriptGameObject::AllowBreakTalkDialog)
 
 		.def("hide_weapon", &CScriptGameObject::HideWeapon)

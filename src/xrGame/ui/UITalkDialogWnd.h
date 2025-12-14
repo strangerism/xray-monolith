@@ -38,6 +38,7 @@ public:
 	u32 GetOurReplicsColor() { return m_uOurReplicsColor; }
 
 	bool mechanic_mode; // for inventory upgrades
+	bool call_mode; // to enable alternate ui skin call.xml
 
 	//номер выбранного вопроса
 	shared_str m_ClickedQuestionID;
@@ -46,7 +47,7 @@ public:
 
 	//	Fvector2			m_btn_pos[3];
 	CUI3tButton UIToTradeButton;
-	//	CUI3tButton			UIToExitButton;
+	CUI3tButton UIToExitButton;
 
 	CUICharacterInfo UICharacterInfoLeft;
 	CUICharacterInfo UICharacterInfoRight;

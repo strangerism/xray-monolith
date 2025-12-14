@@ -145,6 +145,30 @@ void CActor::StartTalk(CInventoryOwner* talk_partner)
 		cam_UnsetFreelook();
 }
 
+
+void CActor::RunCallDialog(CInventoryOwner* talk_partner, bool disable_break)
+{
+
+	//предложить поговорить с нами
+	if (talk_partner->OfferCall(this))
+	{
+		StartCall(talk_partner);
+
+		// if (CurrentGameUI()->TopInputReceiver())
+		// 	CurrentGameUI()->TopInputReceiver()->HideDialog();
+
+		//		smart_cast<CUIGameSP*>(CurrentGameUI())->StartTalk(disable_break);
+		smart_cast<CUIGameSP*>(CurrentGameUI())->StartCall(talk_partner->bDisableBreakDialog);
+	}
+}
+
+void CActor::StartCall(CInventoryOwner* talk_partner)
+{
+	CGameObject* GO = smart_cast<CGameObject*>(talk_partner);
+	VERIFY(GO);
+	CInventoryOwner::StartTalk(talk_partner);
+}
+
 void CActor::NewPdaContact(CInventoryOwner* pInvOwner)
 {
 	if (!IsGameTypeSingle()) return;

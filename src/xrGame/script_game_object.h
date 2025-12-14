@@ -383,6 +383,7 @@ public:
 
 
 	bool IsTalking();
+	bool IsCalling();	
 	void StopTalk();
 	void EnableTalk();
 	void DisableTalk();
@@ -450,6 +451,7 @@ public:
 	void SwitchToUpgrade();
 	void SwitchToTalk();
 	void RunTalkDialog(CScriptGameObject* pToWho, bool disable_break);
+	void RunCallDialog(CScriptGameObject* pToWho, bool disable_break);
 	void AllowBreakTalkDialog(bool disable_break);
 
 	void HideWeapon();

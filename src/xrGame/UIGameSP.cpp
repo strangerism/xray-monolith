@@ -212,9 +212,19 @@ void CUIGameSP::StartTalk(bool disable_break)
 	RemoveCustomStatic("secondary_task");
 
 	TalkMenu->b_disable_break = disable_break;
+	TalkMenu->b_call_mode = false;
 	TalkMenu->ShowDialog(true);
 }
 
+void CUIGameSP::StartCall(bool disable_break)
+{
+	RemoveCustomStatic("main_task");
+	RemoveCustomStatic("secondary_task");
+
+	TalkMenu->b_disable_break = true;
+	TalkMenu->b_call_mode = true;
+	TalkMenu->ShowDialog(true);
+}
 
 void CUIGameSP::StartCarBody(CInventoryOwner* pActorInv, CInventoryOwner* pOtherOwner) //Deadbody search
 {

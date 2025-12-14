@@ -27,6 +27,7 @@ public:
 	virtual void _BCL OnFrame();
 
 	void StartTalk(bool disable_break);
+	void StartCall(bool disable_break);
 	void StartTrade(CInventoryOwner* pActorInv, CInventoryOwner* pOtherOwner);
 	void StartUpgrade(CInventoryOwner* pActorInv, CInventoryOwner* pMech);
 	void StartCarBody(CInventoryOwner* pActorInv, CInventoryOwner* pOtherOwner);

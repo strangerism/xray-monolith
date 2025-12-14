@@ -155,7 +155,12 @@ bool CScriptGameObject::IsTalking()
 	if (!pInventoryOwner) return false;
 	return pInventoryOwner->IsTalking();
 }
-
+bool CScriptGameObject::IsCalling()
+{
+	CInventoryOwner* pInventoryOwner = smart_cast<CInventoryOwner*>(&object());
+	if (!pInventoryOwner) return false;
+	return pInventoryOwner->IsCalling();
+}
 void CScriptGameObject::StopTalk()
 {
 	CInventoryOwner* pInventoryOwner = smart_cast<CInventoryOwner*>(&object());
@@ -1132,6 +1137,22 @@ void CScriptGameObject::RunTalkDialog(CScriptGameObject* pToWho, bool disable_br
 	CInventoryOwner* pPartner = smart_cast<CInventoryOwner*>(&pToWho->object());
 	VERIFY(pPartner);
 	pActor->RunTalkDialog(pPartner, disable_break);
+}
+
+void CScriptGameObject::RunCallDialog(CScriptGameObject* pToWho, bool disable_break)
+{
+	CActor* pActor = smart_cast<CActor*>(&object());
+	//	R_ASSERT2(pActor, "RunTalkDialog applicable only for actor");
+
+	if (!pActor)
+	{
+		ai().script_engine().script_log(ScriptStorage::eLuaMessageTypeError, "RunCallDialog applicable only for actor");
+		return;
+	}
+
+	CInventoryOwner* pPartner = smart_cast<CInventoryOwner*>(&pToWho->object());
+	VERIFY(pPartner);
+	pActor->RunCallDialog(pPartner, disable_break);
 }
 
 void CScriptGameObject::ActorLookAtPoint(Fvector point)

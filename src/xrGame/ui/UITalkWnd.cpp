@@ -35,6 +35,7 @@ CUITalkWnd::CUITalkWnd()
 	InitTalkWnd();
 	m_bNeedToUpdateQuestions = false;
 	b_disable_break = false;
+	b_call_mode = false;
 }
 
 CUITalkWnd::~CUITalkWnd()
@@ -45,11 +46,22 @@ void CUITalkWnd::InitTalkWnd()
 {
 	inherited::SetWndRect(Frect().set(0, 0, UI_BASE_WIDTH, UI_BASE_HEIGHT));
 
-	UITalkDialogWnd = xr_new<CUITalkDialogWnd>();
-	UITalkDialogWnd->SetAutoDelete(true);
-	AttachChild(UITalkDialogWnd);
-	UITalkDialogWnd->m_pParent = this;
-	UITalkDialogWnd->InitTalkDialogWnd();
+	UITalkDialog = xr_new<CUITalkDialogWnd>();
+	UITalkDialog->SetAutoDelete(true);
+	AttachChild(UITalkDialog);
+	UITalkDialog->m_pParent = this;
+	UITalkDialog->InitTalkDialogWnd();
+	UITalkDialog->Hide();
+
+	UICallDialog = xr_new<CUITalkDialogWnd>();
+	UICallDialog->SetAutoDelete(true);
+	AttachChild(UICallDialog);
+	UICallDialog->m_pParent = this;
+	UICallDialog->call_mode = true;
+	UICallDialog->InitTalkDialogWnd();
+	UICallDialog->Hide();
+
+	UITalkDialogWnd = UITalkDialog;
 }
 
 void CUITalkWnd::InitTalkDialog()
@@ -62,6 +74,17 @@ void CUITalkWnd::InitTalkDialog()
 
 	m_pOurDialogManager = smart_cast<CPhraseDialogManager*>(m_pOurInvOwner);
 	m_pOthersDialogManager = smart_cast<CPhraseDialogManager*>(m_pOthersInvOwner);
+
+	// based on the call mode set by the caller, the right dialog is referenced across the CUITalkWnd object lifecycle
+	UITalkDialogWnd->ClearAll();
+	if (b_call_mode)
+	{
+		UITalkDialogWnd = UICallDialog;
+	}
+	else{
+		UITalkDialogWnd = UITalkDialog;
+	}
+	UITalkDialogWnd->Show();
 
 	//имена собеседников
 	UITalkDialogWnd->UICharacterInfoLeft.InitCharacter(m_pOurInvOwner->object_id());
@@ -221,17 +244,20 @@ void CUITalkWnd::Update()
 		UpdateQuestions();
 	}
 	inherited::Update();
-	UpdateCameraDirection(smart_cast<CGameObject*>(m_pOthersInvOwner));
 
-	UITalkDialogWnd->UpdateButtonsLayout(b_disable_break, m_pOthersInvOwner->IsTradeEnabled());
-
-	if (playing_sound())
+	if (!b_call_mode)
 	{
-		CGameObject* pOtherGO = smart_cast<CGameObject*>(m_pOthersInvOwner);
-		Fvector P = pOtherGO->Position();
-		P.y += 1.8f;
-		m_sound.set_position(P);
+		UpdateCameraDirection(smart_cast<CGameObject*>(m_pOthersInvOwner));
+
+		if (playing_sound())
+		{
+			CGameObject* pOtherGO = smart_cast<CGameObject*>(m_pOthersInvOwner);
+			Fvector P = pOtherGO->Position();
+			P.y += 1.8f;
+			m_sound.set_position(P);
+		}
 	}
+	UITalkDialogWnd->UpdateButtonsLayout(b_disable_break, m_pOthersInvOwner->IsTradeEnabled());
 }
 
 void CUITalkWnd::Draw()
@@ -374,6 +400,8 @@ bool CUITalkWnd::OnKeyboardAction(int dik, EUIMessages keyboard_action)
 			if (!b_disable_break)
 			{
 				HideDialog();
+				// default call mode is normal in person conversation instead of distance call
+				// b_call_mode = false;					
 				return true;
 			}
 		}
@@ -444,6 +472,8 @@ void CUITalkWnd::AddIconedMessage(LPCSTR caption, LPCSTR text, LPCSTR texture_na
 void CUITalkWnd::StopTalk()
 {
 	HideDialog();
+	// default call mode is normal in person conversation instead of distance call
+	// b_call_mode = false;	
 }
 
 void CUITalkWnd::Stop()

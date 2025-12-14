@@ -1,0 +1,111 @@
+local og_update = xr_meet.Cmeet_manager.update
+function xr_meet.Cmeet_manager:update()
+    og_update(self)
+    
+    -- added to avoid npc stopping talk during call in xr_meet.process_npc_usability
+    if self.npc and self.npc:is_talking() and self.npc:is_calling() then
+        self.use = "true"
+    end
+end
+
+-- [Strangerism]
+-- this function patch does not change much the original code, except adding meet_manager:update() call before calling xr_meet.process_npc_usability
+-- to ensure npc usability state is updated correctly when npc is in a call with actor
+function xr_motivator.motivator_binder:update(delta)
+	object_binder.update(self, delta)
+	--utils_data.debug_write(strformat("motivator_bind:update %s START",self.object and self.object:name()))
+
+	local object = self.object
+	local id = object:id()
+
+	--utils_obj.debug_nearest(object,"motivator_binder:update(%s)",delta)
+	
+	xr_sound.update(id)
+	
+	-- check dead
+	local object_alive = object:alive()
+	if not (object_alive) then
+		if not (self.first_update) then
+			death_manager.decide_items_to_keep(object)
+		end
+		self.first_update = true
+		
+		object:set_tip_text_default()
+		
+		if (self.st.active_scheme) then
+			xr_logic.try_switch_to_another_section(object, self.st[self.st.active_scheme], db.actor)
+		end
+		--utils_data.debug_write(strformat("motivator_bind:update %s END 1",self.object and self.object:name()))
+		return
+	end
+    -- Start [Strangerism]
+    -- added meet_manager:update() to update npc usability state when npc is in a call with actor (see monkey patch above)
+    -- would its absence being a bug since process_npc_usability depends on meet_manager.use state?
+	local st = db.storage[object:id()]
+	st.meet.meet_manager:update()
+    -- End [Strangerism]
+	xr_meet.process_npc_usability(object)
+	sr_light.check_light(object)
+	
+	if not (object:best_enemy()) then
+		xr_combat_ignore.fighting_with_actor_npcs[id] = nil
+	end
+	
+	self.squad = self.squad or get_object_squad(object)
+	if (self.squad and self.squad:commander_id() == id) then
+		self.squad:update()
+	end
+	
+	if (self.st.state_mgr) then
+		self.st.state_mgr:update()
+	end
+	
+	-- Start [Alundaio]
+	SendScriptCallback("npc_on_update",object,db.storage[id])
+	-- End [Alundaio]
+
+	stalker_generic.update_invulnerability(object)
+	
+	local tg = time_global()
+	if (self.__tmr and tg < self.__tmr) then
+		--utils_data.debug_write(strformat("motivator_bind:update %s END 2",self.object and self.object:name()))
+		return
+	end
+	self.__tmr = tg+500
+	
+	-- DOOR
+	ph_door.try_to_open_door(self.object, self.opened_doors)
+	ph_door.try_to_close_door(self.object, self.opened_doors)
+
+	if (self.st.active_scheme) then
+		local switched
+		if (self.st.combat) then
+			if (self.st.overrides and self.st.overrides.on_combat) then
+				local mgr = object:motivation_action_manager()
+				if (mgr and mgr:initialized() and mgr:current_action_id() == stalker_ids.action_combat_planner) then
+					if (self.st.overrides.on_combat) then
+						xr_logic.pick_section_from_condlist(db.actor,object,self.st.overrides.on_combat.condlist)
+					end
+					if (xr_logic.try_switch_to_another_section(object,self.st.combat,db.actor)) then
+						switched = true
+					elseif (self.st.overrides.combat_type) then
+						xr_combat.set_combat_type(object,db.actor,self.st.overrides)
+					else 
+						xr_combat.set_combat_type(object, db.actor, self.st.combat)
+					end
+				end
+			else 
+				xr_combat.set_combat_type(object, db.actor, self.st.combat)
+			end
+		end
+		
+		if not switched then
+			xr_logic.try_switch_to_another_section(object, self.st[self.st.active_scheme], db.actor)
+		end
+	elseif (self.st.combat) then
+		xr_combat.set_combat_type(object, db.actor, self.st.combat)
+	end
+	--utils_data.debug_write(strformat("motivator_bind:update %s BEFORE AXR_MAIN",self.object and self.object:name()))
+
+	--utils_data.debug_write(strformat("motivator_bind:update %s END 3 AFTER AXR_MAIN",self.object and self.object:name()))
+end
